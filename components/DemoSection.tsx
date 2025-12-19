@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { sendWebhookEvent } from '../services/webhookService';
 import { useLanguage } from './LanguageContext';
 
@@ -8,17 +8,23 @@ const DemoSection: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [videoError, setVideoError] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // High-quality fashion video URL from a reliable CDN
-  const DEMO_VIDEO_URL = "https://assets.mixkit.co/videos/preview/mixkit-fashion-model-in-a-red-suit-34135-large.mp4";
+  /**
+   * Guaranteed stable sample video from Cloudinary Demo Assets.
+   * This is a "couple" video which is high quality and allows hotlinking.
+   */
+  const DEMO_VIDEO_URL = "https://res.cloudinary.com/demo/video/upload/c_fill,h_800,w_600/couple.mp4";
 
   const startDemo = async () => {
     sendWebhookEvent('demo_clicked');
     setIsProcessing(true);
     setShowVideo(false);
     setProgress(0);
+    setVideoError(false);
     
+    // Smooth progress bar simulation
     const interval = setInterval(() => {
       setProgress(prev => {
         if (prev >= 100) {
@@ -33,16 +39,23 @@ const DemoSection: React.FC = () => {
       setIsProcessing(false);
       setShowVideo(true);
       sendWebhookEvent('demo_complete');
-      if (videoRef.current) {
-        videoRef.current.currentTime = 0;
-        videoRef.current.play().catch(e => console.error("Auto-play failed:", e));
-      }
+      
+      // We play the video after a short delay to ensure DOM is ready
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.currentTime = 0;
+          videoRef.current.play().catch(error => {
+            console.warn("Autoplay was blocked by browser. User interaction needed or muted missing.", error);
+          });
+        }
+      }, 50);
     }, 3500);
   };
 
   const resetDemo = () => {
     setShowVideo(false);
     setProgress(0);
+    setVideoError(false);
     if (videoRef.current) {
       videoRef.current.pause();
     }
@@ -101,7 +114,7 @@ const DemoSection: React.FC = () => {
             <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-violet-600 rounded-3xl blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
             
             <div className="relative aspect-[3/4] bg-zinc-950 rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
-              {/* Image layer: visible when not showing video */}
+              {/* Image Layer (Static) */}
               <div className={`absolute inset-0 transition-opacity duration-700 ${showVideo ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
                 <img 
                   src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=800" 
@@ -117,7 +130,7 @@ const DemoSection: React.FC = () => {
                         style={{ width: `${progress}%` }}
                       ></div>
                     </div>
-                    <div className="text-indigo-400 font-mono text-sm animate-pulse">{t('demo.generatingVectors')}</div>
+                    <div className="text-indigo-400 font-mono text-sm animate-pulse uppercase tracking-widest">{t('demo.generatingVectors')}</div>
                     <div className="absolute top-0 left-0 w-full h-1 bg-indigo-500/50 blur-[2px] scan-line"></div>
                   </div>
                 )}
@@ -129,18 +142,36 @@ const DemoSection: React.FC = () => {
                 )}
               </div>
 
-              {/* Video layer: always present for preloading, visibility toggled */}
+              {/* Video Layer (Animated) */}
               <div className={`absolute inset-0 transition-opacity duration-700 ${showVideo ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                <video
-                  ref={videoRef}
-                  className="w-full h-full object-cover"
-                  loop
-                  muted
-                  playsInline
-                  preload="auto"
-                >
-                  <source src={DEMO_VIDEO_URL} type="video/mp4" />
-                </video>
+                {videoError ? (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-900 p-8 text-center">
+                    <svg className="w-12 h-12 text-zinc-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                    <p className="text-zinc-500 text-sm mb-4">Video stream could not be loaded.</p>
+                    <a 
+                      href={DEMO_VIDEO_URL} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-indigo-400 hover:text-indigo-300 text-xs font-bold underline"
+                    >
+                      Check Video Link Manually
+                    </a>
+                    <button onClick={resetDemo} className="mt-6 text-zinc-400 hover:text-white text-sm">Return to Image</button>
+                  </div>
+                ) : (
+                  <video
+                    ref={videoRef}
+                    className="w-full h-full object-cover"
+                    loop
+                    muted
+                    playsInline
+                    preload="auto"
+                    onError={() => setVideoError(true)}
+                  >
+                    <source src={DEMO_VIDEO_URL} type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
+                )}
                 <div className="absolute top-6 left-6 px-3 py-1 rounded bg-indigo-600/90 backdrop-blur-md border border-indigo-400/50 text-xs font-bold uppercase tracking-widest text-white shadow-xl z-10">
                   {t('demo.labelAfter')}
                 </div>
