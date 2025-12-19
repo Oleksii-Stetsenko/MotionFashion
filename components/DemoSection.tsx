@@ -12,15 +12,11 @@ const DemoSection: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   /**
-   * HIGH-END FASHION RUNWAY VIDEO
-   * Using a stable Vimeo external link (Pexels source)
+   * CONFIGURATION: DROPBOX ASSETS
+   * We use ?raw=1 at the end of Dropbox share links to get the direct file stream.
    */
-  const DEMO_VIDEO_URL = "https://player.vimeo.com/external/370331493.sd.mp4?s=7b23587e91176b61314352a46e012e87c088820c&profile_id=139&oauth2_token_id=57447761";
-  
-  /**
-   * MATCHING STATIC FASHION IMAGE
-   */
-  const STATIC_IMAGE_URL = "https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&q=80&w=800";
+  const DROPBOX_IMAGE_URL = "https://www.dropbox.com/scl/fi/ic335jfelc1bcq7j19ybi/9a93e98d7136f6716de03a6668c30456.jpg?rlkey=5ywrshzt116vfisk2lfyab7wh&st=xb1460u5&raw=1";
+  const DROPBOX_VIDEO_URL = "https://www.dropbox.com/scl/fi/u2wjr5jtmwu9wjz71gx6z/video1.mp4?rlkey=79o6eclie7qxt5p5ojj1tmvex&st=xzcfr56b&raw=1";
 
   const startDemo = async () => {
     sendWebhookEvent('demo_clicked');
@@ -29,35 +25,31 @@ const DemoSection: React.FC = () => {
     setProgress(0);
     setVideoError(false);
     
-    // Smooth progress bar simulation
+    // Smooth progress simulation
     const interval = setInterval(() => {
       setProgress(prev => {
         if (prev >= 100) {
           clearInterval(interval);
           return 100;
         }
-        return prev + 1;
+        return prev + 2;
       });
-    }, 30);
+    }, 40);
 
+    // Finalize "rendering" and switch to video
     setTimeout(() => {
       setIsProcessing(false);
       setShowVideo(true);
       sendWebhookEvent('demo_complete');
       
-      // Small delay to ensure the video element is mounted
+      // Auto-play the cinematic loop
       setTimeout(() => {
         if (videoRef.current) {
           videoRef.current.muted = true;
-          const playPromise = videoRef.current.play();
-          if (playPromise !== undefined) {
-            playPromise.catch(error => {
-              console.warn("Playback failed:", error);
-            });
-          }
+          videoRef.current.play().catch(err => console.warn("Video playback deferred:", err));
         }
-      }, 100);
-    }, 3500);
+      }, 150);
+    }, 2200);
   };
 
   const resetDemo = () => {
@@ -119,47 +111,50 @@ const DemoSection: React.FC = () => {
           </div>
 
           <div className="relative group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-violet-600 rounded-3xl blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
+            {/* Ambient Glow */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500/20 to-violet-600/20 rounded-3xl blur-2xl opacity-50 group-hover:opacity-100 transition duration-1000"></div>
             
             <div className="relative aspect-[3/4] bg-zinc-950 rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
-              {/* IMAGE MODE (BEFORE) */}
+              
+              {/* IMAGE MODE (Dropbox Photo) */}
               <div className={`absolute inset-0 transition-opacity duration-700 ${showVideo ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
                 <img 
-                  src={STATIC_IMAGE_URL} 
-                  alt="Static Fashion Model" 
-                  className={`w-full h-full object-cover transition-transform duration-[3500ms] ${isProcessing ? 'scale-110 blur-sm brightness-50' : 'scale-100'}`}
+                  src={DROPBOX_IMAGE_URL} 
+                  alt="MotionFashion Preview" 
+                  className={`w-full h-full object-cover transition-transform duration-[3000ms] ${isProcessing ? 'scale-110 blur-sm brightness-50' : 'scale-100'}`}
                 />
                 
                 {isProcessing && (
                   <div className="absolute inset-0 flex flex-col items-center justify-center p-8 z-20">
-                    <div className="w-full h-1 bg-zinc-800 rounded-full mb-4 overflow-hidden">
+                    <div className="w-full h-1.5 bg-zinc-800 rounded-full mb-4 overflow-hidden max-w-[200px]">
                       <div 
-                        className="h-full bg-indigo-500 transition-all duration-300 shadow-[0_0_15px_rgba(99,102,241,0.5)]" 
+                        className="h-full bg-indigo-500 transition-all duration-300 shadow-[0_0_20px_rgba(99,102,241,1)]" 
                         style={{ width: `${progress}%` }}
                       ></div>
                     </div>
-                    <div className="text-indigo-400 font-mono text-sm animate-pulse uppercase tracking-widest">{t('demo.generatingVectors')}</div>
-                    <div className="absolute top-0 left-0 w-full h-1 bg-indigo-500/50 blur-[2px] scan-line">Scan in progress...</div>
+                    <div className="text-indigo-400 font-mono text-[10px] animate-pulse uppercase tracking-[0.4em] mb-2">{t('demo.generatingVectors')}</div>
+                    <div className="absolute top-0 left-0 w-full h-1 bg-indigo-400/30 blur-[2px] scan-line z-10"></div>
                   </div>
                 )}
 
                 {!isProcessing && !showVideo && (
-                  <div className="absolute top-6 left-6 px-3 py-1 rounded bg-black/60 backdrop-blur-md border border-white/20 text-xs font-bold uppercase tracking-widest z-10">
+                  <div className="absolute top-6 left-6 px-3 py-1 rounded bg-black/60 backdrop-blur-md border border-white/10 text-[10px] font-bold uppercase tracking-widest z-10">
                     {t('demo.labelBefore')}
                   </div>
                 )}
               </div>
 
-              {/* VIDEO MODE (AFTER) */}
+              {/* VIDEO MODE (Dropbox Video) */}
               <div className={`absolute inset-0 transition-opacity duration-700 ${showVideo ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
                 {videoError ? (
                   <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-900 p-8 text-center">
-                    <p className="text-zinc-500 text-sm mb-4">Error loading video stream.</p>
-                    <a href={DEMO_VIDEO_URL} target="_blank" rel="noopener noreferrer" className="text-indigo-400 hover:text-indigo-300 text-xs font-bold underline">Try direct link</a>
+                    <svg className="w-12 h-12 text-zinc-700 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                    <p className="text-zinc-500 text-sm mb-4">Content Stream Unavailable</p>
+                    <button onClick={resetDemo} className="px-4 py-2 bg-zinc-800 rounded-lg text-white text-xs font-bold border border-white/5 hover:bg-zinc-700 transition-colors">Try Again</button>
                   </div>
                 ) : (
                   <video
-                    key={showVideo ? 'active' : 'inactive'}
+                    key={showVideo ? 'active-video' : 'inactive'}
                     ref={videoRef}
                     className="w-full h-full object-cover"
                     loop
@@ -169,10 +164,10 @@ const DemoSection: React.FC = () => {
                     preload="auto"
                     onError={() => setVideoError(true)}
                   >
-                    <source src={DEMO_VIDEO_URL} type="video/mp4" />
+                    <source src={DROPBOX_VIDEO_URL} type="video/mp4" />
                   </video>
                 )}
-                <div className="absolute top-6 left-6 px-3 py-1 rounded bg-indigo-600/90 backdrop-blur-md border border-indigo-400/50 text-xs font-bold uppercase tracking-widest text-white shadow-xl z-10">
+                <div className="absolute top-6 left-6 px-3 py-1 rounded bg-indigo-600/90 backdrop-blur-md border border-indigo-400/30 text-[10px] font-bold uppercase tracking-widest text-white shadow-xl z-10">
                   {t('demo.labelAfter')}
                 </div>
               </div>
