@@ -10,7 +10,7 @@ const DemoSection: React.FC = () => {
   const [progress, setProgress] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Reliable fashion-related video from Mixkit CDN
+  // High-quality fashion video URL from a reliable CDN
   const DEMO_VIDEO_URL = "https://assets.mixkit.co/videos/preview/mixkit-fashion-model-in-a-red-suit-34135-large.mp4";
 
   const startDemo = async () => {
@@ -33,22 +33,20 @@ const DemoSection: React.FC = () => {
       setIsProcessing(false);
       setShowVideo(true);
       sendWebhookEvent('demo_complete');
+      if (videoRef.current) {
+        videoRef.current.currentTime = 0;
+        videoRef.current.play().catch(e => console.error("Auto-play failed:", e));
+      }
     }, 3500);
   };
 
   const resetDemo = () => {
     setShowVideo(false);
     setProgress(0);
-  };
-
-  // Ensure video plays when it becomes visible
-  useEffect(() => {
-    if (showVideo && videoRef.current) {
-      videoRef.current.play().catch(error => {
-        console.error("Video autoplay failed:", error);
-      });
+    if (videoRef.current) {
+      videoRef.current.pause();
     }
-  }, [showVideo]);
+  };
 
   const bullets = t('demo.bullets') as string[];
 
@@ -103,52 +101,50 @@ const DemoSection: React.FC = () => {
             <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-violet-600 rounded-3xl blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
             
             <div className="relative aspect-[3/4] bg-zinc-950 rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
-              {!showVideo ? (
-                <>
-                  <img 
-                    src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=800" 
-                    alt="Static Fashion Model" 
-                    className={`w-full h-full object-cover transition-transform duration-1000 ${isProcessing ? 'scale-110 blur-sm brightness-50' : 'scale-100'}`}
-                  />
-                  
-                  {isProcessing && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center p-8">
-                      <div className="w-full h-1 bg-zinc-800 rounded-full mb-4 overflow-hidden">
-                        <div 
-                          className="h-full bg-indigo-500 transition-all duration-300 shadow-[0_0_15px_rgba(99,102,241,0.5)]" 
-                          style={{ width: `${progress}%` }}
-                        ></div>
-                      </div>
-                      <div className="text-indigo-400 font-mono text-sm animate-pulse">{t('demo.generatingVectors')}</div>
-                      <div className="absolute top-0 left-0 w-full h-1 bg-indigo-500/50 blur-[2px] scan-line"></div>
+              {/* Image layer: visible when not showing video */}
+              <div className={`absolute inset-0 transition-opacity duration-700 ${showVideo ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+                <img 
+                  src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=800" 
+                  alt="Static Fashion Model" 
+                  className={`w-full h-full object-cover transition-transform duration-[3500ms] ${isProcessing ? 'scale-110 blur-sm brightness-50' : 'scale-100'}`}
+                />
+                
+                {isProcessing && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center p-8 z-20">
+                    <div className="w-full h-1 bg-zinc-800 rounded-full mb-4 overflow-hidden">
+                      <div 
+                        className="h-full bg-indigo-500 transition-all duration-300 shadow-[0_0_15px_rgba(99,102,241,0.5)]" 
+                        style={{ width: `${progress}%` }}
+                      ></div>
                     </div>
-                  )}
-
-                  {!isProcessing && (
-                    <div className="absolute top-6 left-6 px-3 py-1 rounded bg-black/60 backdrop-blur-md border border-white/20 text-xs font-bold uppercase tracking-widest">
-                      {t('demo.labelBefore')}
-                    </div>
-                  )}
-                </>
-              ) : (
-                <>
-                  <video
-                    ref={videoRef}
-                    className="w-full h-full object-cover"
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    preload="auto"
-                  >
-                    <source src={DEMO_VIDEO_URL} type="video/mp4" />
-                    Your browser does not support the video tag.
-                  </video>
-                  <div className="absolute top-6 left-6 px-3 py-1 rounded bg-indigo-600/90 backdrop-blur-md border border-indigo-400/50 text-xs font-bold uppercase tracking-widest text-white shadow-xl">
-                    {t('demo.labelAfter')}
+                    <div className="text-indigo-400 font-mono text-sm animate-pulse">{t('demo.generatingVectors')}</div>
+                    <div className="absolute top-0 left-0 w-full h-1 bg-indigo-500/50 blur-[2px] scan-line"></div>
                   </div>
-                </>
-              )}
+                )}
+
+                {!isProcessing && !showVideo && (
+                  <div className="absolute top-6 left-6 px-3 py-1 rounded bg-black/60 backdrop-blur-md border border-white/20 text-xs font-bold uppercase tracking-widest z-10">
+                    {t('demo.labelBefore')}
+                  </div>
+                )}
+              </div>
+
+              {/* Video layer: always present for preloading, visibility toggled */}
+              <div className={`absolute inset-0 transition-opacity duration-700 ${showVideo ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                <video
+                  ref={videoRef}
+                  className="w-full h-full object-cover"
+                  loop
+                  muted
+                  playsInline
+                  preload="auto"
+                >
+                  <source src={DEMO_VIDEO_URL} type="video/mp4" />
+                </video>
+                <div className="absolute top-6 left-6 px-3 py-1 rounded bg-indigo-600/90 backdrop-blur-md border border-indigo-400/50 text-xs font-bold uppercase tracking-widest text-white shadow-xl z-10">
+                  {t('demo.labelAfter')}
+                </div>
+              </div>
             </div>
           </div>
         </div>
