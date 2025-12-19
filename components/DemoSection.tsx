@@ -12,10 +12,15 @@ const DemoSection: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   /**
-   * Most reliable sample video URL (Google Sample Bucket).
-   * It is high quality, widely available, and perfect for testing video playback.
+   * HIGH-END FASHION RUNWAY VIDEO
+   * Using a stable Vimeo external link (Pexels source)
    */
-  const DEMO_VIDEO_URL = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4";
+  const DEMO_VIDEO_URL = "https://player.vimeo.com/external/370331493.sd.mp4?s=7b23587e91176b61314352a46e012e87c088820c&profile_id=139&oauth2_token_id=57447761";
+  
+  /**
+   * MATCHING STATIC FASHION IMAGE
+   */
+  const STATIC_IMAGE_URL = "https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&q=80&w=800";
 
   const startDemo = async () => {
     sendWebhookEvent('demo_clicked');
@@ -40,14 +45,14 @@ const DemoSection: React.FC = () => {
       setShowVideo(true);
       sendWebhookEvent('demo_complete');
       
-      // Small delay to ensure the video element is mounted before calling .play()
+      // Small delay to ensure the video element is mounted
       setTimeout(() => {
         if (videoRef.current) {
-          videoRef.current.muted = true; // Ensure muted for autoplay
+          videoRef.current.muted = true;
           const playPromise = videoRef.current.play();
           if (playPromise !== undefined) {
             playPromise.catch(error => {
-              console.warn("Playback failed. This can happen if the browser blocks autoplay without explicit user interaction.", error);
+              console.warn("Playback failed:", error);
             });
           }
         }
@@ -117,10 +122,10 @@ const DemoSection: React.FC = () => {
             <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-violet-600 rounded-3xl blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
             
             <div className="relative aspect-[3/4] bg-zinc-950 rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
-              {/* IMAGE MODE */}
+              {/* IMAGE MODE (BEFORE) */}
               <div className={`absolute inset-0 transition-opacity duration-700 ${showVideo ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
                 <img 
-                  src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=800" 
+                  src={STATIC_IMAGE_URL} 
                   alt="Static Fashion Model" 
                   className={`w-full h-full object-cover transition-transform duration-[3500ms] ${isProcessing ? 'scale-110 blur-sm brightness-50' : 'scale-100'}`}
                 />
@@ -134,7 +139,7 @@ const DemoSection: React.FC = () => {
                       ></div>
                     </div>
                     <div className="text-indigo-400 font-mono text-sm animate-pulse uppercase tracking-widest">{t('demo.generatingVectors')}</div>
-                    <div className="absolute top-0 left-0 w-full h-1 bg-indigo-500/50 blur-[2px] scan-line"></div>
+                    <div className="absolute top-0 left-0 w-full h-1 bg-indigo-500/50 blur-[2px] scan-line">Scan in progress...</div>
                   </div>
                 )}
 
@@ -145,11 +150,10 @@ const DemoSection: React.FC = () => {
                 )}
               </div>
 
-              {/* VIDEO MODE */}
+              {/* VIDEO MODE (AFTER) */}
               <div className={`absolute inset-0 transition-opacity duration-700 ${showVideo ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
                 {videoError ? (
                   <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-900 p-8 text-center">
-                    <svg className="w-12 h-12 text-zinc-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
                     <p className="text-zinc-500 text-sm mb-4">Error loading video stream.</p>
                     <a href={DEMO_VIDEO_URL} target="_blank" rel="noopener noreferrer" className="text-indigo-400 hover:text-indigo-300 text-xs font-bold underline">Try direct link</a>
                   </div>
