@@ -1,0 +1,7 @@
+{
+  "name": "MotionFashion AI",
+  "description": "A high-conversion landing page demonstrating AI-powered image-to-video capabilities for fashion brands. Integrated with n8n for lead capture and analytics.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
