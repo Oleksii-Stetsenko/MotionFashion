@@ -16,7 +16,7 @@ const DemoSection: React.FC = () => {
    * We use ?raw=1 at the end of Dropbox share links to get the direct file stream.
    */
   const DROPBOX_IMAGE_URL = "https://www.dropbox.com/scl/fi/ic335jfelc1bcq7j19ybi/9a93e98d7136f6716de03a6668c30456.jpg?rlkey=5ywrshzt116vfisk2lfyab7wh&st=xb1460u5&raw=1";
-  const DROPBOX_VIDEO_URL = "https://www.dropbox.com/scl/fi/u2wjr5jtmwu9wjz71gx6z/video1.mp4?rlkey=79o6eclie7qxt5p5ojj1tmvex&st=xzcfr56b&raw=1";
+  const DROPBOX_VIDEO_URL = "https://www.dropbox.com/scl/fi/jijl99ktkbm3c9ngogwwa/Gen-4-Turbo-A-cinematic-slow-motion-video-based-on-the-image-The-model-makes-gentle-subtle-movements-in-place-a-slow-graceful-turn-of-her-head-to-look-slightly-off-camera.mp4?rlkey=qsas9ekds1lpijl4f2mtmyyud&st=bh2br8o4&raw=1";
 
   const startDemo = async () => {
     sendWebhookEvent('demo_clicked');
