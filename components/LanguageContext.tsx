@@ -12,7 +12,8 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [lang, setLang] = useState<Language>('en');
+  // Set default language to Ukrainian ('ua')
+  const [lang, setLang] = useState<Language>('ua');
 
   const t = (path: string) => {
     const keys = path.split('.');
